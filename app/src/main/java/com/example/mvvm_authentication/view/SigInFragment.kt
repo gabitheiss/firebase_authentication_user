@@ -6,43 +6,58 @@ import androidx.fragment.app.Fragment
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import androidx.lifecycle.Observer
 import com.example.mvvm_authentication.MainActivity
 import com.example.mvvm_authentication.R
-import com.example.mvvm_authentication.view.SignUpFragment.Companion.newInstance
-import com.example.mvvm_authentication.view_model.MainViewModel
+import com.example.mvvm_authentication.utils.replaceView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseUser
 
-class MainFragment : Fragment(R.layout.main_fragment) {
+class SigInFragment : Fragment(R.layout.sigin_fragment) {
 
-    companion object {
-        fun newInstance() = MainFragment()
+
+    private lateinit var viewModel: SigInViewModel
+
+    private val observerUser = Observer<FirebaseUser> {
+        requireActivity().replaceView(ContentFragment.newInstance())
     }
 
-    private lateinit var viewModel: MainViewModel
-    private val observerUser = Observer<FirebaseUser?> {
-        Snackbar.make(requireView(), "Usuario criado com sucesso!", Snackbar.LENGTH_LONG).show()
+
+
+    private val observerError = Observer<String> {
+
     }
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(SigInViewModel::class.java)
 
+
+        viewModel.error.observe(viewLifecycleOwner, observerError)
         viewModel.user.observe(viewLifecycleOwner, observerUser)
 
-        view.findViewById<Button>(R.id.saveButton).setOnClickListener {
+
+        /**
+         * Add eventos nos componentes da tela
+         */
+        view.findViewById<Button>(R.id.loginButton).setOnClickListener {
             val inputEmail = view.findViewById<EditText>(R.id.inputEmailEditText)
             val inputPassword = view.findViewById<EditText>(R.id.inputPasswordEditText)
             if (!inputEmail.text.isNullOrEmpty() && !inputPassword.text.isNullOrEmpty()) {
-                viewModel.createNewAcconunt(
-                    inputEmail.text.toString(), inputPassword.text.toString()
+                viewModel.signIn(
+                    inputEmail.text.toString(),
+                    inputPassword.text.toString()
                 )
             }
         }
-        view.findViewById<View>(R.id.backButton).setOnClickListener {
-            (requireActivity() as? MainActivity)?.replaceView(SigInFragment.newInstance())
+
+        view.findViewById<View>(R.id.newAccountTextView).setOnClickListener {
+            (requireActivity() as? MainActivity)?.replaceView(SignUpFragment.newInstance())
         }
     }
-}
 
+
+}
